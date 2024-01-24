@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:base58check/base58.dart';
@@ -54,7 +55,9 @@ final Uint8List privateKeyVersion = Uint8List.fromList(hex.decode('0488ADE4'));
 final Uint8List publicKeyVersion = Uint8List.fromList(hex.decode('0488B21E'));
 
 /// From the BIP32 spec. Used when calculating the hmac of the seed
-final Uint8List masterKey = utf8.encoder.convert('Bitcoin seed');
+final Uint8List masterKeyECDSA = utf8.encoder.convert('Bitcoin seed');
+
+final Uint8List masterKeyED25519 = utf8.encoder.convert('ed25519 seed');
 
 /// AKA 'point(k)' in the specification
 ECPoint publicKeyFor(BigInt d) {
@@ -307,9 +310,19 @@ class ExtendedPrivateKey extends ExtendedKey {
             parentFingerprint: parentFingerprint,
             chainCode: chainCode);
 
-  ExtendedPrivateKey.master(Uint8List seed)
+  ExtendedPrivateKey.masterKeyECDSA(Uint8List seed)
       : super(version: privateKeyVersion) {
-    var hash = hmacSha512(masterKey, seed);
+    var hash = hmacSha512(masterKeyECDSA, seed);
+    key = utils.decodeBigIntWithSign(1, _leftFrom(hash));
+    chainCode = _rightFrom(hash);
+    depth = 0;
+    childNumber = 0;
+    parentFingerprint = Uint8List.fromList([0, 0, 0, 0]);
+  }
+
+  ExtendedPrivateKey.masterKeyED25519(Uint8List seed)
+      : super(version: privateKeyVersion) {
+    var hash = hmacSha512(masterKeyED25519, seed);
     key = utils.decodeBigIntWithSign(1, _leftFrom(hash));
     chainCode = _rightFrom(hash);
     depth = 0;
