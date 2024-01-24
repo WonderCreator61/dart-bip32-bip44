@@ -17,9 +17,17 @@ class Chain {
   ExtendedKey? root;
 
   /// Create a chain based on a hex seed.
-  Chain.seed(String seed) {
+  /// ! FOR ECDSA ONLY !
+  Chain.seedECDSA(String seed) {
     var seedBytes = Uint8List.fromList(hex.decoder.convert(seed));
-    root = ExtendedPrivateKey.master(seedBytes);
+    root = ExtendedPrivateKey.masterKeyECDSA(seedBytes);
+  }
+
+  /// Create a chain based on a hex seed.
+  /// ! FOR ED25519 ONLY !
+  Chain.seedED25519(String seed) {
+    var seedBytes = Uint8List.fromList(hex.decoder.convert(seed));
+    root = ExtendedPrivateKey.masterKeyED25519(seedBytes);
   }
 
   /// Create a chain based on a serialized private or public key.
