@@ -36,6 +36,7 @@ class Chain {
   }
 
   bool get isPrivate => root is ExtendedPrivateKey;
+  ExtendedKey? get getRoot => root;
 
   /// Derives a key based on a path.
   ///
